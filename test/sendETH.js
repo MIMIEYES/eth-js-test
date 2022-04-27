@@ -16,7 +16,9 @@ let toAddress = '0xde03261F1bd05bA98Ba1517E4F54A02e63810986';
 // 以太坊金额
 let value = '0.01';
 
-sendETH(priKey, toAddress, value);
+console.log(ethers.utils.parseEther('0.02'));
+
+// sendETH(priKey, toAddress, value);
 // speedUpSendETH(priKey, toAddress, value);
 
 /**
@@ -43,10 +45,10 @@ async function sendETH(privateKey, toAddress, value) {
         console.log(failed);
         return failed;
     }
-    /*let sendPromise = wallet.sendTransaction(tx);
+    let sendPromise = wallet.sendTransaction(tx);
     sendPromise.then((tx) => {
         console.log(tx.hash);
-    });*/
+    });
 }
 
 async function validate(tx) {

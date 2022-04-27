@@ -6,6 +6,11 @@ var ethers = require('ethers');
 // let provider = new ethers.providers.JsonRpcProvider(url);
 // 测试网 - ropsten, 主网 - homestead
 let provider = ethers.getDefaultProvider('ropsten');
+const ERC20_ABI = [
+    "transfer(address to, uint value) external returns (bool)",
+    "allowance(address owner, address spender) external view returns (uint256)",
+    "approve(address spender, uint256 amount) external returns (bool)"
+];
 const erc20TransferAbiFragment = [{"name":"transfer","type":"function","inputs":[{"name":"_to","type":"address"},{"type":"uint256","name":"_tokens"}],"constant":false,"outputs":[],"payable":false}];
 const GWEI_10 = ethers.utils.parseUnits('10', 9);
 
@@ -20,7 +25,39 @@ let tokenDecimals = 6;
 let value = '2';
 // sendERC20(priKey, erc20Address, tokenDecimals, toAddress, value);
 // speedUpSendERC20(priKey, erc20Address, tokenDecimals, toAddress, value);
-makeTxOfERC20(priKey, erc20Address, tokenDecimals, toAddress, value);
+// makeTxOfERC20(priKey, erc20Address, tokenDecimals, toAddress, value);
+transferERC20(priKey, '0xc11D9943805e56b630A401D4bd9A29550353EFa1', provider, erc20Address, toAddress, tokenDecimals, value);
+
+async function transferERC20(pri, fromAddress, provider, contractAddress, toAddress, decimals, numbers) {
+    const numberOfTokens = ethers.utils.parseUnits(numbers, decimals);
+    const iface = new ethers.utils.Interface(ERC20_ABI);
+    const data = iface.functions.transfer.encode([toAddress, numberOfTokens]);
+    const transactionParameters = {
+        to: contractAddress,
+        from: fromAddress, //验证合约调用需要from,必传
+        value: '0x00',
+        data: data
+    };
+    const failed = await validate(provider, transactionParameters);
+    if (failed) {
+        console.error('failed transferERC20' + failed);
+        return {success: false, msg: 'failed transferERC20' + failed}
+    }
+    delete transactionParameters.from   //etherjs 4.0 from参数无效 报错
+    const gasPrice = await getWithdrawGas(provider);
+    transactionParameters.gasLimit = 150000;
+    transactionParameters.gasPrice = gasPrice.mul(2);
+    console.log(gasPrice.toString());
+    let result = await sendTransaction(pri, provider, transactionParameters);
+    console.log(JSON.stringify(result));
+    return result.msg;
+}
+
+async function getWithdrawGas(provider) {
+    return provider.getGasPrice().then((gasPrice) => {
+        return gasPrice;
+    });
+}
 
 /**
  *
@@ -87,6 +124,32 @@ async function speedUpSendERC20(privateKey, erc20Address, tokenDecimals, toAddre
     contract.transfer(toAddress, numberOfTokens, txs).then(function (tx) {
         console.log(tx.hash);
     });
+}
+
+//验证交易参数
+async function validate(provider, tx) {
+    try {
+        const result = await provider.call(tx)
+        return ethers.utils.toUtf8String('0x' + result.substr(138));
+    } catch (e) {
+        return e.toString();
+    }
+}
+
+async function sendTransaction(pri, provider, transactionParameters) {
+    /* provider.listAccounts().then((accounts) => {
+
+      console.log(accounts,'====accounts====');
+    }); */
+    const wallet = new ethers.Wallet(pri, provider);
+    try {
+        const tx = await wallet.sendTransaction(transactionParameters);
+        if (tx.hash) {
+            return {success: true, msg: tx.hash}
+        }
+    } catch (e) {
+        return {success: false, msg: e}
+    }
 }
 
 async function getNonce(address) {

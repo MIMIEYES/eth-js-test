@@ -43,28 +43,26 @@ async function sendERC20(privateKey, erc20Address, tokenDecimals, toAddress, val
     });
 }
 
+const ERC20_ABI = [
+    "transfer(address to, uint value) external returns (bool)",
+    "allowance(address owner, address spender) external view returns (uint256)",
+    "approve(address spender, uint256 amount) external returns (bool)"
+];
+
 async function makeTxOfERC20(privateKey, erc20Address, tokenDecimals, toAddress, value) {
     privateKey = ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0x' + privateKey), 32);
     let wallet = new ethers.Wallet(privateKey, provider);
     let numberOfTokens = ethers.utils.parseUnits(value, tokenDecimals);
     let nonce = await getNonce(wallet.address);
-    let iface = new ethers.utils.Interface(["function transfer(address recipient, uint256 amount)"]);
-    let data = iface.encodeFunctionData("transfer(address,uint)", [ toAddress, numberOfTokens ]);
-    let tx = {nonce: nonce, to: erc20Address, value: 0, data: data};
+    const iface = new ethers.utils.Interface(ERC20_ABI);
+    const data = iface.functions.transfer.encode([toAddress, numberOfTokens]);
+    console.log('data', data);
 
-    let decode = iface.decodeFunctionData("transfer(address,uint)", data);
-    console.log(decode);
-    console.log("decode: " + decode);
-    // 获取签名的交易
-    let signPromise = wallet.signTransaction(tx);
-    signPromise.then((txHex) => {
-        console.log(txHex);
-    });
-    // 发送交易
-    /*let sendPromise = wallet.sendTransaction(tx);
-    sendPromise.then((tx) => {
-        console.log(tx.hash);
-    });*/
+    let decode = ethers.utils.defaultAbiCoder.decode(
+        ['address','uint256'],
+        ethers.utils.hexDataSlice(data, 4)
+    )
+    console.log('decode', decode.toString());
 }
 
 

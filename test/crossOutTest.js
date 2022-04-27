@@ -30,7 +30,7 @@ let multyContract = '0x7d759a3330cec9b766aa4c889715535eed3c0484';
 
 
 // 充值ETH
-// crossOutByETH();
+crossOutByETH();
 // 充值ERC20
 // crossOutByERC20();
 // 查询token授权额度
@@ -47,6 +47,7 @@ async function crossOutByETH() {
     let amount = ethers.utils.parseEther(value);
     let iface = new ethers.utils.Interface(CROSS_OUT_ABI);
     let data = iface.functions.crossOut.encode([ toAddress, amount, '0x0000000000000000000000000000000000000000' ]);
+    console.log(data);
     let nonce = await getNonce(wallet.address);
     let tx = {nonce: nonce, to: multyContract, value: amount, data: data};
     let _tx = {from: from, to: multyContract, value: amount, data: data};
@@ -55,10 +56,10 @@ async function crossOutByETH() {
         console.log('failed: ' + failed);
         return;
     }
-    let sendPromise = wallet.sendTransaction(tx);
-    sendPromise.then((tx) => {
-        console.log(tx.hash);
-    });
+    // let sendPromise = wallet.sendTransaction(tx);
+    // sendPromise.then((tx) => {
+    //     console.log(tx.hash);
+    // });
 }
 
 // crossOutByERC20();
