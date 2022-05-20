@@ -15,7 +15,6 @@ const ERC20BalanceOfTypes = ['uint256'];
 function testnet() {
     tronWeb = new TronWeb({
         fullHost: 'https://api.shasta.trongrid.io',
-        headers: {"TRON-PRO-API-KEY": ''},
         privateKey: ''
     });
     multiCallAddress = 'TCmNMtJQiPpSKiGuXUj4vcJAGKqJstmsBD';
@@ -259,8 +258,8 @@ async function test() {
     // let result = await getERC20Balance('TG8o48ycgUCB7UJd46cSnxSJybWwTHmRpm', 'TXCWs4vtLW2wYFHfi7xWeiC9Kuj2jxpKqJ');
     // let result = await multiCallOfBalances('TCNYd8L5hBey9FwPpvgtvDaY2cHjMFVLZu', addressToHex('TMZBDFxu5WE8VwYSj2p3vVuBxxKMSqZDc8'), [addressToHex('TDndaG9V79f3dVuVQHvGZjx3VWN9XxzGe9'),addressToHex('TPZddNpQJHu8UtKPY1PYDBv2J5p5QpJ6XW'),addressToHex('THSjCwmYVeK1oLR3TdnXhP7vcU9xVssR3m')]);
     // let result = await multiCallOfBalances(multiCallAddress, 'TTaJsdnYPsBjLLM1u2qMw1e9fLLoVKnNUX', ['T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb', 'TXCWs4vtLW2wYFHfi7xWeiC9Kuj2jxpKqJ', 'TEzJjjC4NrLrYFthGFHzQon5zrErNw1JN9', 'TYMQT8152SicTSDuNEob6t6QRLfet1xrMn']);
-    let result = await estimateEnergyUsed('TTaJsdnYPsBjLLM1u2qMw1e9fLLoVKnNUX', 'TEzJjjC4NrLrYFthGFHzQon5zrErNw1JN9', 'transfer(address,uint256)', '0', ['TFzEXjcejyAdfLSEANordcppsxeGW9jEm2', '1']);
+    let result = await multiCallOfBalances(multiCallAddress, 'TTaJsdnYPsBjLLM1u2qMw1e9fLLoVKnNUX', ['T9yD14Nj9j7xAB4dbGeiX9h8unkKHxuWwb']);
+    // let result = await estimateEnergyUsed('TTaJsdnYPsBjLLM1u2qMw1e9fLLoVKnNUX', 'TEzJjjC4NrLrYFthGFHzQon5zrErNw1JN9', 'transfer(address,uint256)', '0', ['TFzEXjcejyAdfLSEANordcppsxeGW9jEm2', '1']);
     console.log(result);
 }
 
-// window.addressToTron = addressToTron;

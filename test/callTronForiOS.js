@@ -66,7 +66,6 @@ var tronTool = {
     testnet() {
         tronWeb = new TronWeb({
             fullHost: 'https://api.shasta.trongrid.io',
-            headers: {"TRON-PRO-API-KEY": ''},
             privateKey: ''
         });
     },
