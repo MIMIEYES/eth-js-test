@@ -4,11 +4,11 @@
 var ethers = require('ethers');
 // 测试网 - ropsten, 主网 - homestead
 // let provider = ethers.getDefaultProvider('ropsten');
-let testUrl = "https://data-seed-prebsc-1-s1.binance.org:8545/";
-let mainUrl = "https://bsc-dataseed.binance.org/";
-let url = "http://18.167.142.95:26659";
-let provider = new ethers.providers.JsonRpcProvider(url);
-// let provider = new ethers.providers.JsonRpcProvider(testUrl);
+// let testUrl = "https://data-seed-prebsc-1-s1.binance.org:8545/";
+// let mainUrl = "https://bsc-dataseed.binance.org/";
+// let url = "http://18.167.142.95:26659";
+// let provider = new ethers.providers.JsonRpcProvider('https://moeing.tech:9545');
+let provider = new ethers.providers.JsonRpcProvider('http://35.220.203.194:8545');
 let acount = '0xf173805F1e3fE6239223B17F0807596Edc283012';
 getEthBalance(acount);
 
