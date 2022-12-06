@@ -13,7 +13,7 @@ const ONE_CLICK_CROSS_OUT_ABI = [
     "function oneClickCrossChain(uint256 feeAmount, uint256 desChainId, string desToAddress, uint256 tipping, string tippingAddress, bytes extend) public"
 ];
 // BRG 黑洞地址
-const BLACK_HOLE = "0xF3c90eF58eC31805af11CE5FA6d39E395c66441f";
+const BLACK_HOLE = "0x0000000000000000000000000000000000000000";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 
