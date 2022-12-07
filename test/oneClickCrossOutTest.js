@@ -3,14 +3,13 @@
 // 引入ethers.js
 var ethers = require('ethers');
 const {BigNumber} = require("ethers/utils");
-let url = "https://bsc-testnet.public.blastapi.io";
-let provider = new ethers.providers.JsonRpcProvider(url);
 
 const CROSS_OUT_ABI = [
     "function crossOutII(string to, uint256 amount, address ERC20, bytes data) public payable returns (bool)"
 ];
 const ONE_CLICK_CROSS_OUT_ABI = [
-    "function oneClickCrossChain(uint256 feeAmount, uint256 desChainId, string desToAddress, uint256 tipping, string tippingAddress, bytes extend) public"
+    "function oneClickCrossChain(uint256 feeAmount, uint256 desChainId, string desToAddress, uint256 tipping, string tippingAddress, bytes extend) public",
+    "function addFeeCrossChain(string orderNo, bytes extend) public"
 ];
 // BRG 黑洞地址
 const BLACK_HOLE = "0x0000000000000000000000000000000000000000";
@@ -19,6 +18,8 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 // tokenCrossTest();
 async function tokenCrossTest() {
+    let url = "https://bsc-testnet.public.blastapi.io";
+    let provider = new ethers.providers.JsonRpcProvider(url);
     // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
     let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
     let multyContract = '0xc9Ad179aDbF72F2DcB157D11043D5511D349a44b';
@@ -34,13 +35,15 @@ async function tokenCrossTest() {
     let tipping = "0.621";
     let tippingAddress = "0xd16634629c638efd8ed90bb096c216e7aec01a91";
 
-    let hash = await oneClickCrossOut(privateKey, multyContract, sendAmount, feeAmount, tipping, tippingAddress,
+    let hash = await oneClickCrossOut(provider, privateKey, multyContract, sendAmount, feeAmount, tipping, tippingAddress,
         desChainId, desToAddress, erc20Address, tokenDecimals);
     console.log(hash, 'hash');
 }
 
-bnbCrossTest();
+// bnbCrossTest();
 async function bnbCrossTest() {
+    let url = "https://bsc-testnet.public.blastapi.io";
+    let provider = new ethers.providers.JsonRpcProvider(url);
     // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
     let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
     let multyContract = '0xc9Ad179aDbF72F2DcB157D11043D5511D349a44b';
@@ -52,14 +55,28 @@ async function bnbCrossTest() {
     let tipping = "0.00521";
     let tippingAddress = "0xd16634629c638efd8ed90bb096c216e7aec01a91";
 
-    let hash = await oneClickCrossOut(privateKey, multyContract, sendAmount, feeAmount, tipping, tippingAddress,
+    let hash = await oneClickCrossOut(provider, privateKey, multyContract, sendAmount, feeAmount, tipping, tippingAddress,
         desChainId, desToAddress);
+    console.log(hash, 'hash');
+}
+
+// addFeeTest();
+async function addFeeTest() {// 注意: 追加手续费在交易发起链
+    let url = "https://exchaintestrpc.okex.org";
+    let provider = new ethers.providers.JsonRpcProvider(url);
+    // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
+    let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
+    let multyContract = '0xf85f03C3fAAC61ACF7B187513aeF10041029A1b2';
+    // 追加的手续费数量
+    let feeAmount = '0.04';
+    let orderNo = 'ccebad0dcce44ab59f1da40c92fa41cdb57eb2f6e81e42eeac8ee283fd94b3a1';
+    let hash = await addFeeCrossChain(provider, privateKey, multyContract, feeAmount, orderNo);
     console.log(hash, 'hash');
 }
 
 
 /**
- *
+ * @param provider 网络provider
  * @param privateKey 用户私钥
  * @param multyContract 发起链多签合约
  * @param crossAmount 跨链金额
@@ -73,6 +90,7 @@ async function bnbCrossTest() {
  * @returns 交易hash
  */
 async function oneClickCrossOut(
+                provider,
                 privateKey,
                 multyContract,
                 crossAmount,
@@ -119,30 +137,63 @@ async function oneClickCrossOut(
     } else {
         data = iface.functions.crossOutII.encode([ BLACK_HOLE, 0, ZERO_ADDRESS, ooocData ]);
     }
-    let nonce = await getNonce(from);
+    let nonce = await getNonce(provider, from);
     let tx = {nonce: nonce, to: multyContract, value: etherTransfer, data: data};
     let _tx = {from: from, to: multyContract, value: etherTransfer, data: data};
-    let failed = await validate(_tx);
+    let failed = await validate(provider, _tx);
     if (failed) {
         console.log('failed: ' + failed);
         return;
     }
-    // console.log('success');
-    // console.log('from: ' + from);
-    // console.log('data: ' + tx.data);
-    // console.log('data size: ' + tx.data.length);
     let txResponse = await wallet.sendTransaction(tx);
     return txResponse.hash;
-
 }
 
-async function getNonce(address) {
+/**
+ * @param provider 网络provider
+ * @param privateKey 用户私钥
+ * @param multyContract 发起链多签合约
+ * @param feeAmount 手续费金额（发起链主资产）
+ * @param orderNo BRG网络orderNo
+ * @returns 交易hash
+ */
+async function addFeeCrossChain(
+                provider,
+                privateKey,
+                multyContract,
+                feeAmount,
+                orderNo) {
+    privateKey = ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0x' + privateKey), 32);
+    let wallet = new ethers.Wallet(privateKey, provider);
+    let from = wallet.address;
+    let numberOfFeeAmount = ethers.utils.parseEther(feeAmount);
+    let etherTransfer = new BigNumber(0);
+    etherTransfer = etherTransfer.add(numberOfFeeAmount);
+
+    let ooocFace = new ethers.utils.Interface(ONE_CLICK_CROSS_OUT_ABI);
+    let ooocData = ooocFace.functions.addFeeCrossChain.encode([ orderNo, []]);
+
+    let iface = new ethers.utils.Interface(CROSS_OUT_ABI);
+    let data = iface.functions.crossOutII.encode([ BLACK_HOLE, 0, ZERO_ADDRESS, ooocData ]);
+    let nonce = await getNonce(provider, from);
+    let tx = {nonce: nonce, to: multyContract, value: etherTransfer, data: data};
+    let _tx = {from: from, to: multyContract, value: etherTransfer, data: data};
+    let failed = await validate(provider, _tx);
+    if (failed) {
+        console.log('failed: ' + failed);
+        return;
+    }
+    let txResponse = await wallet.sendTransaction(tx);
+    return txResponse.hash;
+}
+
+async function getNonce(provider, address) {
     return await provider.getTransactionCount(address).then((transactionCount) => {
         return transactionCount;
     });
 }
 
-async function validate(tx) {
+async function validate(provider, tx) {
     return await provider.call(tx).then((result) => {
         console.log('result: ' + result);
         let reason = ethers.utils.toUtf8String('0x' + result.substr(138));
