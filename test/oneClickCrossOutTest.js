@@ -11,7 +11,7 @@ const ONE_CLICK_CROSS_OUT_ABI = [
     "function oneClickCrossChain(uint256 feeAmount, uint256 desChainId, string desToAddress, uint256 tipping, string tippingAddress, bytes extend) public",
     "function addFeeCrossChain(string orderNo, bytes extend) public"
 ];
-// BRG 黑洞地址
+// BRG 黑洞地址 0xF3c90eF58eC31805af11CE5FA6d39E395c66441f
 const BLACK_HOLE = "0x0000000000000000000000000000000000000000";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -29,7 +29,7 @@ async function tokenCrossTest() {
     // 跨链的token数量
     let sendAmount = '6.66';
 
-    let feeAmount = "0.0002";
+    let feeAmount = "0.000000000002";
     let desChainId = 104;
     let desToAddress = "0xc11D9943805e56b630A401D4bd9A29550353EFa1";
     let tipping = "0.621";
@@ -60,16 +60,18 @@ async function bnbCrossTest() {
     console.log(hash, 'hash');
 }
 
-// addFeeTest();
+addFeeTest();
 async function addFeeTest() {// 注意: 追加手续费在交易发起链
     let url = "https://exchaintestrpc.okex.org";
+    let multyContract = '0xf85f03C3fAAC61ACF7B187513aeF10041029A1b2';
+    // let url = "https://bsc-testnet.public.blastapi.io";
+    // let multyContract = '0xc9Ad179aDbF72F2DcB157D11043D5511D349a44b';
     let provider = new ethers.providers.JsonRpcProvider(url);
     // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
     let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
-    let multyContract = '0xf85f03C3fAAC61ACF7B187513aeF10041029A1b2';
     // 追加的手续费数量
     let feeAmount = '0.04';
-    let orderNo = 'ccebad0dcce44ab59f1da40c92fa41cdb57eb2f6e81e42eeac8ee283fd94b3a1';
+    let orderNo = '5d187e9afdb54ed2998adf3f640c378b1803c1396baf498ebb07f08c03a37320';
     let hash = await addFeeCrossChain(provider, privateKey, multyContract, feeAmount, orderNo);
     console.log(hash, 'hash');
 }
