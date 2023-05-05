@@ -4,13 +4,17 @@ const {BufferEncoding} = require("buffer");
 const {BigNumber} = require("ethers/utils");
 const {isHexable} = require("ethers/utils/bytes");
 
+// 0x68656c6c6f174AEdE666339bf92a9bB938bda5A5f62B53CF6A000000000000000000000000000000000000000000000000000000002faf08007472616e736665724173736574000000000000000000000000000000000000000000000000000000000000000a encode data
+// ca0c87bfaef2903fc5d94eac96f6afdb7a0f6d6afdabb00fb36315fb8306b65c hash
 
+// encoderTransferAsset(5, 0, 'hello', '0x174AEdE666339bf92a9bB938bda5A5f62B53CF6A', '800000000');
 // _encoder(5, 0, "hello", 1, 0, 1, "quitAll");// encoderQuitAll
 // _encoder(5, 0, "hello", 1, 0, 1, "giveUpAll");// encoderGiveUpAll
 // encoderTransferProjectCandyAsset(1, 0, "1", 0);
 // console.log(Buffer.from('0', "utf8").toString("hex"), '00000');
 // console.log(Buffer.from('1', "utf8").toString("hex"), '11111');
 // console.log(Buffer.from('2', "utf8").toString("hex"), '22222');
+console.log(ethers.utils.parseEther('2.3').toString(), '22222');
 // encoderSetProjectStatus(5, 0, "hello4", 1, 2);
 // strTest();
 // 0x3100000000000000000000000000000000000000000000000000000000000000007472616e7366657250726f6a65637443616e647941737365740000000000000000000000000000000000000000000000000000000000000002
@@ -51,8 +55,12 @@ const {isHexable} = require("ethers/utils/bytes");
 // testPrikey();
 let hash = '0x405004f905654214d16f097affb67a659be323dd7ba0ee26b9bbaffb35b0b947';
 let hash1 = '0x307834303530303466393035363534323134643136663039376166666236376136353962653332336464376261306565323662396262616666623335623062393437';
-console.log(ethers.utils.toUtf8String(hash1), 'hash1');
-console.log(ethers.utils.toUtf8String(hash), 'hash');
+// console.log(ethers.utils.toUtf8String(hash1), 'hash1');
+// console.log(ethers.utils.toUtf8String(hash), 'hash');
+
+let data = 'hello';
+console.log(ethers.utils.hexlify(ethers.utils.toUtf8Bytes(data)), 'ethers');
+console.log('0x' + Buffer.from(data, "utf8").toString("hex"), 'buffer');
 
 function testPrikey() {
     let wallet = new ethers.Wallet(ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0xa572b95153b10141ff06c64818c93bd0e7b4025125b83f15a89a7189248191ca'), 32));
@@ -150,6 +158,18 @@ function encoderSetProjectStatus(chainId, contractVersion, txKey, pid, status) {
     result += ethers.utils.hexZeroPad(new BigNumber(chainId * 2 + contractVersion).toHexString(), 32).substring(2);
     console.log(result, 'encode data');
     console.log(ethers.utils.keccak256(result), 'hash');
+}
+
+function encoderTransferAsset(chainId, contractVersion, txKey, toAddress, amount) {
+    let result = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(txKey));
+    result += toAddress.substring(2);
+    result += ethers.utils.hexZeroPad(new BigNumber(amount).toHexString(), 32).substring(2);
+    result += Buffer.from("transferAsset", "utf8").toString("hex");
+    result += ethers.utils.hexZeroPad(new BigNumber(chainId * 2 + contractVersion).toHexString(), 32).substring(2);
+    console.log(result, 'encode data');
+    let hash = ethers.utils.keccak256(result).substring(2);
+    console.log(hash, 'hash');
+    return hash;
 }
 
 
