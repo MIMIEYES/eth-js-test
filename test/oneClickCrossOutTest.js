@@ -16,23 +16,48 @@ const BLACK_HOLE = "0x0000000000000000000000000000000000000000";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 
-tokenCrossTest();
-async function tokenCrossTest() {
+tokenCrossFromBalanceTest();
+async function tokenCrossFromBalanceTest() {
     let url = "https://bsc-testnet.public.blastapi.io";
     let provider = new ethers.providers.JsonRpcProvider(url);
     // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
-    let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
-    let multyContract = '0x7293e234D14150A108f02eD822C280604Ee76583';
+    let privateKey = '';
+    let multyContract = '0xA5666f880D56EC3E845e38f7A2c661e83e79f3C3';
     let erc20Address = "0xb6d685346106b697e6b2bba09bc343cafc930ca3";//USDX
     // token小数位数
     let tokenDecimals = 6;
     // 跨链的token数量
-    let sendAmount = '0.064';
+    let sendAmount = '0.024';
 
     let feeAmount = "0.00002";
     let desChainId = 104;
     let desToAddress = "0xc11D9943805e56b630A401D4bd9A29550353EFa1";
-    let tipping = "0.00621";
+    let tipping = "0.00021";
+    let tippingAddress = "0xd16634629c638efd8ed90bb096c216e7aec01a91";
+
+    let hash = await oneClickCrossOut(provider, privateKey, multyContract, sendAmount, feeAmount, tipping, tippingAddress,
+        desChainId, desToAddress, erc20Address, tokenDecimals);
+    console.log(hash, 'hash');
+
+}
+
+// tokenCrossFromOKXTest();
+async function tokenCrossFromOKXTest() {
+    let url = "https://exchaintestrpc.okex.org";
+    let provider = new ethers.providers.JsonRpcProvider(url);
+    // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
+    let privateKey = '';
+    let multyContract = '0x5478f79fce38762a4E5e9e7f3A9a748B0D06f8F0';
+    let erc20Address = "0x3a202151ad3F67cfE1647F7aeB9b8f60C8B257Dd";//USDX
+    // token小数位数
+    let tokenDecimals = 6;
+    // 跨链的token数量
+    let sendAmount = '0.024';
+
+    let feeAmount = "0.002";
+    let desChainId = 102;
+    let desToAddress = "0xc11D9943805e56b630A401D4bd9A29550353EFa1";
+    let tipping = "0.00021";
     let tippingAddress = "0xd16634629c638efd8ed90bb096c216e7aec01a91";
 
     let hash = await oneClickCrossOut(provider, privateKey, multyContract, sendAmount, feeAmount, tipping, tippingAddress,
@@ -46,7 +71,7 @@ async function bnbCrossTest() {
     let url = "https://bsc-testnet.public.blastapi.io";
     let provider = new ethers.providers.JsonRpcProvider(url);
     // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
-    let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
+    let privateKey = '';
     let multyContract = '0xdC6B95B2032f4445a3ee4154E0Fa005814B447d1';
     // 跨链的资产数量
     let sendAmount = '0.06';
@@ -69,7 +94,7 @@ async function addFeeTest() {// 注意: 追加手续费在交易发起链
     let multyContract = '0xc9Ad179aDbF72F2DcB157D11043D5511D349a44b';
     let provider = new ethers.providers.JsonRpcProvider(url);
     // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
-    let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
+    let privateKey = '';
     // 追加的手续费数量
     let feeAmount = '0.000002';
     let orderNo = '5554523d387d44f0ab77a5811945d055cfd0c188726a46aab4ffe2199154a376';
@@ -93,18 +118,18 @@ async function addFeeTest() {// 注意: 追加手续费在交易发起链
  * @returns 交易hash
  */
 async function oneClickCrossOut(
-                provider,
-                privateKey,
-                multyContract,
-                crossAmount,
-                feeAmount,
-                tippingAmount,
-                tippingAddress,
-                desChainId,
-                desToAddress,
-                erc20,
-                erc20Decimals
-                ) {
+    provider,
+    privateKey,
+    multyContract,
+    crossAmount,
+    feeAmount,
+    tippingAmount,
+    tippingAddress,
+    desChainId,
+    desToAddress,
+    erc20,
+    erc20Decimals
+) {
     let isToken = false;
     if (erc20) isToken = true;
     if (!tippingAmount) tippingAmount = 0;
@@ -161,11 +186,11 @@ async function oneClickCrossOut(
  * @returns 交易hash
  */
 async function addFeeCrossChain(
-                provider,
-                privateKey,
-                multyContract,
-                feeAmount,
-                orderNo) {
+    provider,
+    privateKey,
+    multyContract,
+    feeAmount,
+    orderNo) {
     privateKey = ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0x' + privateKey), 32);
     let wallet = new ethers.Wallet(privateKey, provider);
     let from = wallet.address;

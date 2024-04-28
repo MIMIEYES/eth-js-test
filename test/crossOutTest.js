@@ -2,7 +2,7 @@
 
 // 引入ethers.js
 var ethers = require('ethers');
-let url = "https://bsc-testnet.public.blastapi.io";
+let url = "https://sphinx.shardeum.org";
 let provider = new ethers.providers.JsonRpcProvider(url);
 // 测试网 - ropsten, 主网 - homestead
 // let provider = ethers.getDefaultProvider('homestead');
@@ -22,49 +22,63 @@ let ERC20_ABI = [
 const GWEI_10 = ethers.utils.parseUnits('10', 9);
 
 // 0xc11D9943805e56b630A401D4bd9A29550353EFa1 [Account9]
-let privateKey = '4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39';
-// let privateKey = 'd8cdccd432fd1bb7711505d97c441672c540ccfcdbba17397619702eeef1d403';
+let privateKey = '';
 let from = getAddressByPrivateKey(privateKey);
 // NERVE接收地址
-let toAddress = 'TNVTdTSPRnXkDiagy7enti1KL75NU5AxC9sQA';
+let toAddress = 'TNVTdTSPJJMGh7ijUGDqVZyucbeN1z4jqb1ad';
 // 多签合约
 // let multyContract = '0xdcb777E7491f03D69cD10c1FeE335C9D560eb5A2';
-let multyContract = '0x7d759a3330cec9b766aa4c889715535eed3c0484';
+let multyContract = '0x5e7e2abaa58e108f5b9d5d30a76253fa8cb81f9d';
 
 // test();
-function test () {
+function test() {
     let decimals;
     let aaa = ethers.utils.parseUnits('10', 8);
     console.log(aaa, 'aaa');
 }
 
 // 充值ETH
-// crossOutByETH();
+crossOutByETH();
 // 充值ERC20
 // crossOutByERC20();
 // 查询token授权额度
 // getERC20Allowance();
 // 授权token
 // approveERC20();
+let a =
+    {
+        "transaction": {
+            "from": "0xC9aFB4fA1D7E2B7D324B7cb1178417FF705f5996",
+            "to": "0x5e7E2AbAa58e108f5B9D5D30A76253Fa8Cb81f9d",
+            "value": {
+                "type": "BigNumber",
+                "hex": "0x038d7ea4c68000"
+            },
+            "data": "0x0889d1f0000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000038d7ea4c6800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000025544e5654645453504a4a4d476837696a55474471565a79756362654e317a346a7162316164000000000000000000000000000000000000000000000000000000",
+            "accessList": null
+        },
+        "blockTag": "latest"
+    };
 
 async function crossOutByETH() {
     // 充值的ETH数量
-    let value = '0.1';
-
-    privateKey = ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0x' + privateKey), 32);
-    let wallet = new ethers.Wallet(privateKey, provider);
+    let value = '0.001';
     let amount = ethers.utils.parseEther(value);
     let iface = new ethers.utils.Interface(CROSS_OUT_ABI);
     let data = iface.functions.crossOut.encode([ toAddress, amount, '0x0000000000000000000000000000000000000000' ]);
+    // const data = iface.encodeFunctionData('crossOut', [toAddress, amount, '0x0000000000000000000000000000000000000000']);
     console.log(data);
-    let nonce = await getNonce(wallet.address);
-    let tx = {nonce: nonce, to: multyContract, value: amount, data: data};
     let _tx = {from: from, to: multyContract, value: amount, data: data};
     let failed = await validate(_tx);
     if (failed) {
         console.log('failed: ' + failed);
         return;
     }
+
+    privateKey = ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0x' + privateKey), 32);
+    let wallet = new ethers.Wallet(privateKey, provider);
+    let nonce = await getNonce(wallet.address);
+    let tx = {nonce: nonce, to: multyContract, value: amount, data: data};
     // let sendPromise = wallet.sendTransaction(tx);
     // sendPromise.then((tx) => {
     //     console.log(tx.hash);
@@ -84,7 +98,7 @@ async function crossOutByERC20() {
     let numberOfSendAmount = ethers.utils.parseUnits(sendAmount, tokenDecimals);
 
     let iface = new ethers.utils.Interface(CROSS_OUT_ABI);
-    let data = iface.functions.crossOut.encode([ toAddress, numberOfSendAmount, erc20Address]);
+    let data = iface.functions.crossOut.encode([toAddress, numberOfSendAmount, erc20Address]);
     let nonce = await getNonce(wallet.address);
     let tx = {nonce: nonce, to: multyContract, value: 0, data: data};
     let _tx = {from: from, to: multyContract, value: 0, data: data};
@@ -104,7 +118,6 @@ async function crossOutByERC20() {
 
 }
 
-oneClickCrossOutTest();
 async function oneClickCrossOutTest() {
     let multyContract = '0xc9Ad179aDbF72F2DcB157D11043D5511D349a44b';
     let erc20Address = "0x02e1aFEeF2a25eAbD0362C4Ba2DC6d20cA638151";//BUSD
@@ -129,10 +142,10 @@ async function oneClickCrossOutTest() {
 
     let ooocFace = new ethers.utils.Interface(ONE_CLICK_CROSS_OUT_ABI);
     let ooocData = ooocFace.functions.oneClickCrossChain.encode(
-        [ numberOfFeeAmount, desChainId, desToAddress, numberOftipping, tippingAddress, []]);
+        [numberOfFeeAmount, desChainId, desToAddress, numberOftipping, tippingAddress, []]);
 
     let iface = new ethers.utils.Interface(CROSS_OUT_ABI);
-    let data = iface.functions.crossOutII.encode([ toAddress, numberOfSendAmount, erc20Address, ooocData ]);
+    let data = iface.functions.crossOutII.encode([toAddress, numberOfSendAmount, erc20Address, ooocData]);
     let nonce = await getNonce(wallet.address);
     let tx = {nonce: nonce, to: multyContract, value: numberOfFeeAmount, data: data};
     let _tx = {from: from, to: multyContract, value: numberOfFeeAmount, data: data};
@@ -151,6 +164,7 @@ async function oneClickCrossOutTest() {
     });
 
 }
+
 // approveERC20();
 async function approveERC20() {
     // ERC20合约地址 NVT
@@ -161,7 +175,7 @@ async function approveERC20() {
     privateKey = ethers.utils.hexZeroPad(ethers.utils.hexStripZeros('0x' + privateKey), 32);
     let wallet = new ethers.Wallet(privateKey, provider);
     let iface = new ethers.utils.Interface(ERC20_ABI);
-    let data = iface.functions.approve.encode([ spender,  new ethers.utils.BigNumber('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')]);
+    let data = iface.functions.approve.encode([spender, new ethers.utils.BigNumber('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')]);
     let nonce = await getNonce(wallet.address);
     let tx = {nonce: nonce, to: erc20Address, data: data};
     let _tx = {from: from, to: erc20Address, data: data};
@@ -179,6 +193,7 @@ async function approveERC20() {
         console.log(tx.hash);
     });
 }
+
 // getERC20Allowance();
 function getERC20Allowance() {
     // ERC20合约地址 NVT
